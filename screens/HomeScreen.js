@@ -3,13 +3,17 @@
 import React, { useState, useContext } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { ProfileContext } from "../context/ProfileContext";
+import { adapty } from "react-native-adapty";
+import { createPaywallView } from "react-native-adapty/dist/ui";
+import AdaptyConstants from "../AdaptyConstants";
+import { activationPromise } from "../AdaptyService";
 
 export default function HomeScreen({ navigation }) {
   // Local state to hold the text input
   const [entryText, setEntryText] = useState("");
 
   // Pull context values
-  const { addEntry, isPremium } = useContext(ProfileContext);
+  const { addEntry, isPremium, purchasePremium } = useContext(ProfileContext);
 
   // Called when user taps "Save Entry"
   function handleSave() {
@@ -22,11 +26,53 @@ export default function HomeScreen({ navigation }) {
   }
 
   // Called when user taps "View History"
-  function handleViewHistory() {
+  async function handleViewHistory() {
+    await activationPromise;
     if (isPremium) {
       navigation.navigate("History");
     } else {
-      navigation.navigate("Paywall");
+      try {
+        const paywall = await adapty.getPaywall(
+          AdaptyConstants.PLACEMENT_ID,
+          "en"
+        );
+        if (paywall.hasViewConfiguration) {
+          const view = await createPaywallView(paywall);
+          view.registerEventHandlers({
+            onCloseButtonPress() {
+              return true;
+            },
+            onPurchaseCompleted(purchaseResult, product) {
+              if (purchaseResult.type === "success") {
+                purchasePremium(purchaseResult.profile);
+                navigation.navigate("History");
+                return true;
+              }
+              return false;
+            },
+            onPurchaseFailed(error) {
+              console.error("Purchase failed:", error);
+              return false;
+            },
+            onRestoreCompleted(restoredProfile) {
+              purchasePremium(restoredProfile);
+              navigation.navigate("History");
+              return true;
+            },
+            onRestoreFailed(error) {
+              console.error("Restore failed:", error);
+              return false;
+            },
+            onRenderingFailed(error) {
+              console.error("Error rendering paywall:", error);
+              return false;
+            },
+          });
+          await view.present();
+        }
+      } catch (error) {
+        console.error("Error loading paywall:", error);
+      }
     }
   }
 

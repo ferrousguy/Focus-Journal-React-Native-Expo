@@ -1,6 +1,9 @@
 // context/ProfileContext.js
 
 import React, { createContext, useState, useEffect } from "react";
+import { adapty } from "react-native-adapty";
+import AdaptyConstants from "../AdaptyConstants";
+import { activationPromise } from "../AdaptyService";
 
 // 1) Create the context object
 export const ProfileContext = createContext({});
@@ -23,6 +26,33 @@ export function ProfileProvider({ children }) {
   // Shared state: entries array and isPremium boolean
   const [entries, setEntries] = useState(seededEntries);
   const [isPremium, setIsPremium] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        await activationPromise;
+
+        const profile = await adapty.getProfile();
+
+        if (profile && profile.accessLevels) {
+          const level = profile.accessLevels[AdaptyConstants.ACCESS_LEVEL_ID];
+          if (mounted) {
+            setIsPremium(
+              !!(level?.isActive || level?.isInGracePeriod || level?.isLifetime)
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching Adapty profile:", error);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Function to add a new journal entry
   function addEntry(text) {
