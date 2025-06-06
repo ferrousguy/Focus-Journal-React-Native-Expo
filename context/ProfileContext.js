@@ -5,10 +5,8 @@ import { adapty } from "react-native-adapty";
 import AdaptyConstants from "../AdaptyConstants";
 import { activationPromise } from "../AdaptyService";
 
-// 1) Create the context object
 export const ProfileContext = createContext({});
 
-// 2) Build a provider component
 export function ProfileProvider({ children }) {
   const seededEntries = [
     {
@@ -23,7 +21,6 @@ export function ProfileProvider({ children }) {
     },
   ];
 
-  // Shared state: entries array and isPremium boolean
   const [entries, setEntries] = useState(seededEntries);
   const [isPremium, setIsPremium] = useState(false);
 
@@ -54,7 +51,6 @@ export function ProfileProvider({ children }) {
     };
   }, []);
 
-  // Function to add a new journal entry
   function addEntry(text) {
     const newEntry = {
       id: Date.now().toString(), // unique ID
@@ -64,14 +60,6 @@ export function ProfileProvider({ children }) {
     // Prepend to the list (so latest is on top)
     setEntries((prev) => [newEntry, ...prev]);
   }
-
-  // Function to “purchase” (for now, just toggles isPremium)
-  function purchasePremium() {
-    setIsPremium(true);
-  }
-
-  // Optionally: load saved entries/premium flag from AsyncStorage later
-  // but for this quickstart, we’ll keep everything in memory.
 
   // Value that will be exposed to all children
   const value = {
