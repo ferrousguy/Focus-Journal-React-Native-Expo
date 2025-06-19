@@ -1,4 +1,4 @@
-# [Focus Journal for React Native with Expo](https://github.com/ferrousguy/Focus-Journal-React-Native)
+# [Focus Journal for React Native with Expo](https://github.com/ferrousguy/Focus-Journal-React-Native-Expo)
 
 This repository demonstrates how to integrate the [Adapty SDK](https://adapty.io) into an existing React Native app built with Expo and EAS Build. It contains two branches:
 
