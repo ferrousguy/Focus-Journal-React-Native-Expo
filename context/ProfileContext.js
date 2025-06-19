@@ -61,6 +61,13 @@ export function ProfileProvider({ children }) {
     setEntries((prev) => [newEntry, ...prev]);
   }
 
+  function purchasePremium(updatedProfile) {
+    const level = updatedProfile.accessLevels[AdaptyConstants.ACCESS_LEVEL_ID];
+    setIsPremium(
+      !!(level?.isActive || level?.isInGracePeriod || level?.isLifetime)
+    );
+  }
+
   // Value that will be exposed to all children
   const value = {
     entries,
